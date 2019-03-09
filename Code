@@ -1,0 +1,66 @@
+import csv
+import collections
+import math 
+
+k=15
+save = True
+
+#membaca nilai dari data train
+def DataTraining():
+	with open('DataTrain_Tugas3_AI.csv') as file:
+		reader = csv.reader(file, delimiter=',')
+		next(reader)
+		data=[]
+		for row in reader:
+			data.append(list(map(lambda x: float(x),row[1:])))
+		return data
+
+#membaca nilai dari data test
+def DataTest():
+	with open('DataTest_Tugas3_AI.csv') as file:
+		reader = csv.reader(file, delimiter=',')
+		next(reader)
+		data=[]
+		for row in reader:
+			data.append(list(map(lambda x: float(x),row[1:6])))
+		return data
+
+#mencari jarak antara 2 data menggunakan eucladean algorithm
+def Euclidean(inX,inY):
+	euc=list(map(lambda x,y: (x-y)**2, inX,inY))
+	return math.sqrt(sum(euc))
+
+#menyimpan data kedalam CSV
+def Simpan(DataHasil):
+	with open('TebakanTugas3.csv','w',newline='')as file :
+		fieldnames=['No','Hasil']
+		write=csv.DictWriter(file,fieldnames=fieldnames)
+		write.writeheader()
+		i = 1
+		for hasil in DataHasil:
+			write.writerow({'No':[i],'Hasil':[hasil]})
+			i+=1
+
+if __name__=='__main__':
+	training_data = DataTraining()
+	test_data = DataTest()
+	DataHasil=[]
+	for test in test_data:
+		list_jarak= []
+		for train in training_data:
+			list_jarak.append([Euclidean(test, train[:5]), train[5]])
+		list_jarak.sort(key=(lambda x: x[0]))
+		#mendapatkan nilai K 
+		nearest_distance=list_jarak[:k]
+		#membagi distance dan class kedalam list individual
+		distance, class_type= zip(*nearest_distance)
+		#menghitung class type
+		counter =collections.Counter(class_type)
+		#mengambil hitungan yang mendekati 
+		hasil= counter.most_common(1)[0][0]
+		DataHasil.append(int(hasil))
+	#menyimpan data bila save dalam keadaan true
+	if save:
+		Simpan(DataHasil)
+
+	
